@@ -6,8 +6,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Nimut\TestingFramework\Http\Response;
 use Nimut\TestingFramework\TestCase\FunctionalTestCase;
 
-use PHPUnit\Util\PHP\DefaultPhpProcess;
-
 /**
  * The rendering test class.
  *
@@ -47,19 +45,17 @@ class RenderingTest extends FunctionalTestCase {
 
   /**
    * Setup before running tests.
-   *
-   * @return void
    */
   protected function setUp() {
     parent::setUp();
 
     $this->importDataSet(__DIR__ . '/Fixtures/Database/Pages.xml');
 
-    $this->setUpFrontendRootPage(1, ['EXT:t3v_media/Tests/Functional/Fixtures/Frontend/Basic.typoscript']);
+    $this->setUpFrontendRootPage(1, ['EXT:t3v_media/Tests/Functional/Fixtures/Frontend/Basic.ts']);
   }
 
   /**
-   * Helper function to fetch the Frontend response.
+   * Fetches the Frontend response.
    *
    * @param array $requestArguments The request arguments
    * @param bool $failOnFailure Fail on failure, defaults to `true`
@@ -90,7 +86,7 @@ class RenderingTest extends FunctionalTestCase {
       'ntfRoot'      => __DIR__ . '/../../.build/vendor/nimut/testing-framework/'
     ]);
 
-    $php      = DefaultPhpProcess::factory();
+    $php      = \PHPUnit_Util_PHP::factory();
     $response = $php->runJob($template->render());
     $result   = json_decode($response['stdout'], true);
 
