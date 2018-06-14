@@ -15,9 +15,9 @@ class YoukuHelper extends AbstractOEmbedHelper {
   /**
    * Gets public URL.
    *
-   * @param File $file
-   * @param bool $relativeToCurrentScript
-   * @return string|NULL The public URL.
+   * @param File $file The file
+   * @param bool $relativeToCurrentScript Relative to current script
+   * @return string|null The public URL or null
    */
   public function getPublicUrl(File $file, $relativeToCurrentScript = false) {
     $videoId = $this->getOnlineMediaId($file);
@@ -26,10 +26,10 @@ class YoukuHelper extends AbstractOEmbedHelper {
   }
 
   /**
-   * Gets local absolute file path to preview image.
+   * Gets the local absolute file path to the preview image.
    *
    * @param File $file The File
-   * @return string The local absolute file path to preview image
+   * @return string The local absolute file path to the preview image
    */
   public function getPreviewImage(File $file) {
     $videoId           = $this->getOnlineMediaId($file);
@@ -61,18 +61,19 @@ class YoukuHelper extends AbstractOEmbedHelper {
    *
    * @param string $url The URL
    * @param Folder $targetFolder The target folder
-   * @return File|NULL
+   * @return File|null The file or null
    */
   public function transformUrlToFile($url, Folder $targetFolder) {
     $videoId = null;
 
-    // Try to get the YouTube code from given url.
-    // These formats are supported with and without http(s)://
+    // Try to get the YouTube code from a given URL.
+    // These formats are supported with and without `http(s)://`:
+    //
     // - youtu.be/<code> # Share URL
     // - www.youtube.com/watch?v=<code> # Normal web link
     // - www.youtube.com/v/<code>
     // - www.youtube-nocookie.com/v/<code> # youtube-nocookie.com web link
-    // - www.youtube.com/embed/<code> # URL form iframe embed code, can also get code from full iframe snippet
+    // - www.youtube.com/embed/<code> # URL form iframe embed code, can also get code from a full iframe snippet
 
     if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
       $videoId = $match[1];
@@ -90,7 +91,7 @@ class YoukuHelper extends AbstractOEmbedHelper {
    *
    * @param string $mediaId The media ID
    * @param string $format The format
-   * @return string The oEmbed URL.
+   * @return string The oEmbed URL
    */
   protected function getOEmbedUrl($mediaId, $format = 'json') {
     return sprintf('https://www.youtube.com/oembed?url=%s&format=%s',
