@@ -19,6 +19,11 @@ Installation
 2. Run `composer install` or `composer update` to install all dependencies with Composer
 3. Include the TypoScript for T3v Media
 
+Integrations
+------------
+
+* [Youku] integration
+
 Development
 -----------
 
@@ -71,3 +76,4 @@ T3v Media is released under the [MIT License (MIT)], see [LICENSE].
 [Travis CI Status]: https://img.shields.io/travis/t3v/t3v_media.svg?style=flat "Travis CI Status"
 [TYPO3voila]: https://github.com/t3v "“UH LÁLÁ, TYPO3!”"
 [Unit Testing TYPO3]: https://wiki.typo3.org/Unit_Testing_TYPO3 "Unit testing TYPO3"
+[Youku]: https://www.youku.com "Youku"

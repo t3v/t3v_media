@@ -13,47 +13,52 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class YoukuHelper extends AbstractOEmbedHelper {
   /**
+   * The allowd hosts.
+   */
+  const ALLOWED_HOSTS = ['v.youku.com', 'player.youku.com'];
+
+  /**
+   * The preview image placeholder URL.
+   */
+  const PREVIEW_IMAGE_PLACEHOLDER_URL = 'https://via.placeholder.com/1280x720/35B5FF/FFFFFF?text=Youku';
+
+  /**
    * Gets public URL.
    *
    * @param File $file The file
-   * @param bool $relativeToCurrentScript Relative to current script
+   * @param bool $relativeToCurrentScript Use relative paths to the current script, defaults to `false`
    * @return string|null The public URL or null
    */
   public function getPublicUrl(File $file, $relativeToCurrentScript = false) {
-    $videoId = $this->getOnlineMediaId($file);
+    $mediaId = $this->getOnlineMediaId($file);
 
-    return sprintf('https://www.youtube.com/watch?v=%s', $videoId);
+    return sprintf('https://v.youku.com/v_show/id_%s', $mediaId);
   }
 
   /**
-   * Gets the local absolute file path to the preview image.
+   * Gets the preview image (local absolute file path).
    *
    * @param File $file The File
-   * @return string The local absolute file path to the preview image
+   * @return string The preview image
    */
   public function getPreviewImage(File $file) {
-    $videoId           = $this->getOnlineMediaId($file);
-    $temporaryFileName = $this->getTempFolderPath() . 'youtube_' . md5($videoId) . '.jpg';
+    $mediaId           = $this->getOnlineMediaId($file);
+    $temporaryFileName = $this->getTempFolderPath() . 'youtube_' . md5($mediaId) . '.jpg';
 
-    if (!file_exists($temporaryFileName)) {
-      $tryNames = ['maxresdefault.jpg', '0.jpg'];
+    // if (!file_exists($temporaryFileName)) {
+    //   $previewImage = GeneralUtility::getUrl(self::PREVIEW_IMAGE_PLACEHOLDER_URL);
+    //   // $previewImage = GeneralUtility::getFileAbsFileName('EXT:t3v_media/Resources/Public/Preview/Youku.jpg');
+    //
+    //   if ($previewImage !== false) {
+    //     file_put_contents($temporaryFileName, $previewImage);
+    //
+    //     GeneralUtility::fixPermissions($temporaryFileName);
+    //   }
+    // }
+    //
+    // return $temporaryFileName;
 
-      foreach ($tryNames as $tryName) {
-        $previewImage = GeneralUtility::getUrl(
-          sprintf('https://img.youtube.com/vi/%s/%s', $videoId, $tryName)
-        );
-
-        if ($previewImage !== false) {
-          file_put_contents($temporaryFileName, $previewImage);
-
-          GeneralUtility::fixPermissions($temporaryFileName);
-
-          break;
-        }
-      }
-    }
-
-    return $temporaryFileName;
+    return null;
   }
 
   /**
@@ -64,39 +69,85 @@ class YoukuHelper extends AbstractOEmbedHelper {
    * @return File|null The file or null
    */
   public function transformUrlToFile($url, Folder $targetFolder) {
-    $videoId = null;
+    $mediaId = self::transformUrlToMediaId($url);
 
-    // Try to get the YouTube code from a given URL.
-    // These formats are supported with and without `http(s)://`:
-    //
-    // - youtu.be/<code> # Share URL
-    // - www.youtube.com/watch?v=<code> # Normal web link
-    // - www.youtube.com/v/<code>
-    // - www.youtube-nocookie.com/v/<code> # youtube-nocookie.com web link
-    // - www.youtube.com/embed/<code> # URL form iframe embed code, can also get code from a full iframe snippet
-
-    if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
-      $videoId = $match[1];
-    }
-
-    if (empty($videoId)) {
+    if (empty($mediaId)) {
       return null;
     }
 
-    return $this->transformMediaIdToFile($videoId, $targetFolder, $this->extension);
+    return $this->transformMediaIdToFile($mediaId, $targetFolder, $this->extension);
   }
 
   /**
-   * Gets oEmbed URL to retrieve oEmbed data.
+   * Tries to transform the given URL to a media ID.
+   *
+   * These formats are supported with and without `http(s)://`:
+   *
+   * - v.youku.com/v_show/id_<VIDEO_ID>
+   * - v.youku.com/v_show/id_<VIDEO_ID>==.html
+   * - player.youku.com/embed/<VIDEO_ID>==
+   *
+   * @param string $url The URL to transform
+   * @return string|null The media ID or null if the URL couldn't transformed to a media ID
+   */
+  public static function transformUrlToMediaId($url) {
+    $mediaId = null;
+
+    // Add protocol prefix if not present
+    if (strpos($url, '://') === false && substr($url, 0, 1) != '/') {
+      $url = 'https://' . $url;
+    }
+
+    $parsedUrl = parse_url($url);
+
+    if (!empty($parsedUrl)) {
+      $host = $parsedUrl['host'];
+
+      if (in_array($host, self::ALLOWED_HOSTS)) {
+        if (preg_match('/^(?:http(?:s)?:\/\/)?(?:v\.)?(?:player\.)?(?:youku\.com\/(?:v_show|embed)\/)?([^\?&\"\'>]+)/', $url, $match)) {
+          if ($match[1]) {
+            $mediaId = $match[1];
+            $mediaId = str_replace('id_', '', $mediaId);
+            $mediaId = str_replace('==', '', $mediaId);
+            $mediaId = str_replace('.html', '', $mediaId);
+            $mediaId = str_replace('.json', '', $mediaId);
+          }
+        }
+      }
+    }
+
+    return $mediaId;
+  }
+
+  /**
+   * Gets the oEmbed URL to retrieve oEmbed data.
    *
    * @param string $mediaId The media ID
-   * @param string $format The format
+   * @param string $format The optional format, defaults to `json`
    * @return string The oEmbed URL
    */
   protected function getOEmbedUrl($mediaId, $format = 'json') {
-    return sprintf('https://www.youtube.com/oembed?url=%s&format=%s',
-      urlencode(sprintf('https://www.youtube.com/watch?v=%s', $mediaId)),
-      rawurlencode($format)
-    );
+    $url = sprintf('https://v.youku.com/v_show/id_%s==.%s', $mediaId, $format);
+
+    return $url;
+  }
+
+  /**
+   * Gets the OEmbed data.
+   *
+   * @param string $mediaId The media ID
+   * @return array|null The OEmbed data or null if no OEmbed data is available
+   */
+  protected function getOEmbedData($mediaId) {
+    // $oEmbedUrl  = $this->getOEmbedUrl($mediaId);
+    // $oEmbedData = GeneralUtility::getUrl($oEmbedUrl);
+    //
+    // if ($oEmbedData) {
+    //   $oEmbedData = json_decode($oEmbedData, true);
+    // }
+    //
+    // return $oEmbedData;
+
+    return null;
   }
 }

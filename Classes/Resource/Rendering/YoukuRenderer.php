@@ -43,7 +43,7 @@ class YoukuRenderer implements FileRendererInterface {
    * @return bool If the given file or reference can be rendered
    */
   public function canRender(FileInterface $file) {
-    return ($file->getMimeType() === 'video/youtube' || $file->getExtension() === 'youtube') && $this->getOnlineMediaHelper($file) !== false;
+    return ($file->getMimeType() === 'video/youku' || $file->getExtension() === 'youku') && $this->getOnlineMediaHelper($file) !== false;
   }
 
   /**
@@ -71,17 +71,25 @@ class YoukuRenderer implements FileRendererInterface {
   }
 
   /**
-   * The render for a given file or reference, renders HTML output.
+   * The render for a given file or reference, renders output as HTML.
    *
    * @param FileInterface $file The file or reference
-   * @param int|string $width TYPO3 known format; examples: `220`, `200m` or `200c`
-   * @param int|string $height TYPO3 known format; examples: `220`, `200m` or `200c`
-   * @param array $options The options
-   * @param bool $usedPathsRelativeToCurrentScript See `$file->getPublicUrl()`
+   * @param int|string $width The optional width in pixel, defaults to `480`
+   * @param int|string $height The optional height in pixel, defaults to `270`
+   * @param array $options The optional options
+   * @param bool $relativeToCurrentScript Use relative paths to the current script, defaults to `false`
    * @return string The rendered output
    */
-  public function render(FileInterface $file, $width, $height, array $options = null, $usedPathsRelativeToCurrentScript = false) {
-    // Checks for an autoplay option at the file reference itself, if not overriden yet.
+  public function render(FileInterface $file, $width = 480, $height = 270, array $options = null, $relativeToCurrentScript = false) {
+    $width  = (int) $width;
+    $height = (int) $height;
+
+    if (empty($width) && empty($height)) {
+      $width  = 480;
+      $height = 270;
+    }
+
+    // Checks for an autoplay option at the file reference itself, if not overriden yet
     if (!isset($options['autoplay']) && $file instanceof FileReference) {
       $autoplay = $file->getProperty('autoplay');
 
@@ -91,68 +99,78 @@ class YoukuRenderer implements FileRendererInterface {
     }
 
     if ($file instanceof FileReference) {
-      $orgFile = $file->getOriginalFile();
+      $originalFile = $file->getOriginalFile();
     } else {
-      $orgFile = $file;
+      $originalFile = $file;
     }
 
-    $videoId = $this->getOnlineMediaHelper($file)->getOnlineMediaId($orgFile);
+    $mediaId = $this->getOnlineMediaHelper($file)->getOnlineMediaId($originalFile);
 
-    $urlParams = ['autohide=1'];
+    $urlParams = [];
 
-    $options['controls'] = MathUtility::canBeInterpretedAsInteger($options['controls']) ? (int)$options['controls'] : 2;
-    $options['controls'] = MathUtility::forceIntegerInRange($options['controls'], 0, 2);
-    $urlParams[] = 'controls=' . $options['controls'];
+    // $urlParams = ['autohide=1'];
+    //
+    // $options['controls'] = MathUtility::canBeInterpretedAsInteger($options['controls']) ? (int)$options['controls'] : 2;
+    // $options['controls'] = MathUtility::forceIntegerInRange($options['controls'], 0, 2);
+    // $urlParams[] = 'controls=' . $options['controls'];
+    //
+    // if (!empty($options['autoplay'])) {
+    //   $urlParams[] = 'autoplay=1';
+    // }
+    //
+    // if (!empty($options['loop'])) {
+    //   $urlParams[] = 'loop=1&amp;playlist=' . $mediaId;
+    // }
+    //
+    // if (isset($options['relatedVideos'])) {
+    //   $urlParams[] = 'rel=' . (int) (bool) $options['relatedVideos'];
+    // }
+    //
+    // if (!isset($options['enablejsapi']) || !empty($options['enablejsapi'])) {
+    //   $urlParams[] = 'enablejsapi=1&amp;origin=' . rawurlencode(GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST'));
+    // }
+    //
+    // $urlParams[] = 'showinfo=' . (int) !empty($options['showinfo']);
 
-    if (!empty($options['autoplay'])) {
-      $urlParams[] = 'autoplay=1';
+    if (empty($urlParams)) {
+      $src = sprintf(
+        'http://player.youku.com/embed/%s==',
+        $mediaId
+      );
+    } else {
+      $src = sprintf(
+        'http://player.youku.com/embed/%s==?%s',
+        $mediaId,
+        implode('&amp;', $urlParams)
+      );
     }
-
-    if (!empty($options['loop'])) {
-      $urlParams[] = 'loop=1&amp;playlist=' . $videoId;
-    }
-
-    if (isset($options['relatedVideos'])) {
-      $urlParams[] = 'rel=' . (int)(bool)$options['relatedVideos'];
-    }
-
-    if (!isset($options['enablejsapi']) || !empty($options['enablejsapi'])) {
-      $urlParams[] = 'enablejsapi=1&amp;origin=' . rawurlencode(GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST'));
-    }
-
-    $urlParams[] = 'showinfo=' . (int)!empty($options['showinfo']);
-
-    $src = sprintf(
-      'https://www.youtube%s.com/embed/%s?%s',
-      !isset($options['no-cookie']) || !empty($options['no-cookie']) ? '-nocookie' : '',
-      $videoId,
-      implode('&amp;', $urlParams)
-    );
 
     $attributes = ['allowfullscreen'];
 
-    if ((int)$width > 0) {
-      $attributes[] = 'width="' . (int)$width . '"';
+    if ($width > 0) {
+      $attributes[] = 'width="' . $width . '"';
     }
 
-    if ((int)$height > 0) {
-      $attributes[] = 'height="' . (int)$height . '"';
+    if ($height > 0) {
+      $attributes[] = 'height="' . $height . '"';
     }
 
     if (is_object($GLOBALS['TSFE']) && $GLOBALS['TSFE']->config['config']['doctype'] !== 'html5') {
       $attributes[] = 'frameborder="0"';
     }
 
-    foreach (['class', 'dir', 'id', 'lang', 'style', 'title', 'accesskey', 'tabindex', 'onclick', 'poster', 'preload'] as $key) {
+    foreach (['accesskey', 'class', 'dir', 'id', 'lang', 'onclick', 'poster', 'preload', 'style', 'tabindex', 'title'] as $key) {
       if (!empty($options[$key])) {
         $attributes[] = $key . '="' . htmlspecialchars($options[$key]) . '"';
       }
     }
 
-    return sprintf(
+    $output = sprintf(
       '<iframe src="%s"%s></iframe>',
       $src,
       empty($attributes) ? '' : ' ' . implode(' ', $attributes)
     );
+
+    return $output;
   }
 }
