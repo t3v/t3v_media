@@ -47,10 +47,10 @@ class YoukuRenderer implements FileRendererInterface {
   }
 
   /**
-   * Gets online media helper.
+   * Gets the online media helper.
    *
    * @param FileInterface $file The file or reference
-   * @return bool|OnlineMediaHelperInterface
+   * @return bool|OnlineMediaHelperInterface The online media helper
    */
   protected function getOnlineMediaHelper(FileInterface $file) {
     if ($this->onlineMediaHelper === null) {

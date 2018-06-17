@@ -13,7 +13,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class YoukuHelper extends AbstractOEmbedHelper {
   /**
-   * The allowd hosts.
+   * The allowed hosts.
    */
   const ALLOWED_HOSTS = ['v.youku.com', 'player.youku.com'];
 
@@ -62,23 +62,6 @@ class YoukuHelper extends AbstractOEmbedHelper {
   }
 
   /**
-   * Trys to transform the given URL to an file.
-   *
-   * @param string $url The URL
-   * @param Folder $targetFolder The target folder
-   * @return File|null The file or null
-   */
-  public function transformUrlToFile($url, Folder $targetFolder) {
-    $mediaId = self::transformUrlToMediaId($url);
-
-    if (empty($mediaId)) {
-      return null;
-    }
-
-    return $this->transformMediaIdToFile($mediaId, $targetFolder, $this->extension);
-  }
-
-  /**
    * Tries to transform the given URL to a media ID.
    *
    * These formats are supported with and without `http(s)://`:
@@ -117,6 +100,23 @@ class YoukuHelper extends AbstractOEmbedHelper {
     }
 
     return $mediaId;
+  }
+
+  /**
+   * Tries to transform the given URL to an file.
+   *
+   * @param string $url The URL
+   * @param Folder $targetFolder The target folder
+   * @return File|null The file or null
+   */
+  public function transformUrlToFile($url, Folder $targetFolder) {
+    $mediaId = self::transformUrlToMediaId($url);
+
+    if (empty($mediaId)) {
+      return null;
+    }
+
+    return $this->transformMediaIdToFile($mediaId, $targetFolder, $this->extension);
   }
 
   /**
