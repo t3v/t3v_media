@@ -3,8 +3,8 @@ Changelog
 
 Notable changes will be documented in this file. The project adheres to [Semantic Versioning].
 
-Unreleased
-----------
+2.0.1
+-----
 
 * Changed mime type from `image/youku` to `video/youku`
 
