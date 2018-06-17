@@ -18,11 +18,6 @@ class YoukuHelper extends AbstractOEmbedHelper {
   const ALLOWED_HOSTS = ['v.youku.com', 'player.youku.com'];
 
   /**
-   * The preview image placeholder URL.
-   */
-  const PREVIEW_IMAGE_PLACEHOLDER_URL = 'https://via.placeholder.com/1280x720/35B5FF/FFFFFF?text=Youku';
-
-  /**
    * Gets public URL.
    *
    * @param File $file The file
@@ -45,20 +40,17 @@ class YoukuHelper extends AbstractOEmbedHelper {
     $mediaId           = $this->getOnlineMediaId($file);
     $temporaryFileName = $this->getTempFolderPath() . 'youtube_' . md5($mediaId) . '.jpg';
 
-    // if (!file_exists($temporaryFileName)) {
-    //   $previewImage = GeneralUtility::getUrl(self::PREVIEW_IMAGE_PLACEHOLDER_URL);
-    //   // $previewImage = GeneralUtility::getFileAbsFileName('EXT:t3v_media/Resources/Public/Preview/Youku.jpg');
-    //
-    //   if ($previewImage !== false) {
-    //     file_put_contents($temporaryFileName, $previewImage);
-    //
-    //     GeneralUtility::fixPermissions($temporaryFileName);
-    //   }
-    // }
-    //
-    // return $temporaryFileName;
+    if (!file_exists($temporaryFileName)) {
+      $previewImage = file_get_contents(GeneralUtility::getFileAbsFileName('EXT:t3v_media/Resources/Public/Preview/Youku.jpg'));
 
-    return null;
+      if ($previewImage !== false) {
+        file_put_contents($temporaryFileName, $previewImage);
+
+        GeneralUtility::fixPermissions($temporaryFileName);
+      }
+    }
+
+    return $temporaryFileName;
   }
 
   /**
