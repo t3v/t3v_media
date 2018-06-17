@@ -9,7 +9,7 @@ $iconsFolder  = \T3v\T3vCore\Utility\ExtensionUtility::iconsFolder($extensionKey
 // === Youku Integration ===
 
 // Add Youku as new mime type
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['FileInfo']['fileExtensionToMimeType']['youku'] = 'image/youku';
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['FileInfo']['fileExtensionToMimeType']['youku'] = 'video/youku';
 
 // Add Youku to allowed media file extensions
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['mediafile_ext'] .= ',youku';
@@ -29,10 +29,10 @@ if (TYPO3_MODE === 'BE') {
   $iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);
 
   $iconRegistry->registerIcon(
-    'mimetypes-media-image-youku',
+    'mimetypes-media-video-youku',
     \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
     ['source' => "{$iconsFolder}/MimeTypes/Youku.svg"]
   );
 
-  $iconRegistry->registerFileExtension('youku', 'mimetypes-media-image-youku');
+  $iconRegistry->registerFileExtension('youku', 'mimetypes-media-video-youku');
 }

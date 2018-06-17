@@ -3,6 +3,11 @@ Changelog
 
 Notable changes will be documented in this file. The project adheres to [Semantic Versioning].
 
+Unreleased
+----------
+
+* Changed mime type from `image/youku` to `video/youku`
+
 1.0.1
 -----
 
