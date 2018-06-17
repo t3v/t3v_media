@@ -29,7 +29,7 @@ class RenderingTest extends FunctionalTestCase {
   protected $testExtensionsToLoad = ['typo3conf/ext/t3v_media'];
 
   /**
-   * Test if template is rendered.
+   * Tests if the template is rendered.
    *
    * @test
    */
@@ -57,7 +57,7 @@ class RenderingTest extends FunctionalTestCase {
   }
 
   /**
-   * Helper function to fetch the Frontend response.
+   * Fetches the Frontend response.
    *
    * @param array $requestArguments The request arguments
    * @param bool $failOnFailure Fail on failure, defaults to `true`
