@@ -54,14 +54,14 @@ class YoukuRenderer implements FileRendererInterface {
    */
   protected function getOnlineMediaHelper(FileInterface $file) {
     if ($this->onlineMediaHelper === null) {
-      $orgFile = $file;
+      $originalFile = $file;
 
-      if ($orgFile instanceof FileReference) {
-        $orgFile = $orgFile->getOriginalFile();
+      if ($originalFile instanceof FileReference) {
+        $originalFile = $originalFile->getOriginalFile();
       }
 
-      if ($orgFile instanceof File) {
-        $this->onlineMediaHelper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($orgFile);
+      if ($originalFile instanceof File) {
+        $this->onlineMediaHelper = OnlineMediaHelperRegistry::getInstance()->getOnlineMediaHelper($originalFile);
       } else {
         $this->onlineMediaHelper = false;
       }
@@ -133,16 +133,9 @@ class YoukuRenderer implements FileRendererInterface {
     // $urlParams[] = 'showinfo=' . (int) !empty($options['showinfo']);
 
     if (empty($urlParams)) {
-      $src = sprintf(
-        'http://player.youku.com/embed/%s==',
-        $mediaId
-      );
+      $src = sprintf('https://player.youku.com/embed/%s==', $mediaId);
     } else {
-      $src = sprintf(
-        'http://player.youku.com/embed/%s==?%s',
-        $mediaId,
-        implode('&amp;', $urlParams)
-      );
+      $src = sprintf('https://player.youku.com/embed/%s==?%s', $mediaId, implode('&amp;', $urlParams));
     }
 
     $attributes = ['allowfullscreen'];
@@ -165,12 +158,8 @@ class YoukuRenderer implements FileRendererInterface {
       }
     }
 
-    $output = sprintf(
-      '<iframe src="%s"%s></iframe>',
-      $src,
-      empty($attributes) ? '' : ' ' . implode(' ', $attributes)
-    );
+    $attributes = empty($attributes) ? '' : ' ' . implode(' ', $attributes);
 
-    return $output;
+    return sprintf('<iframe src="%s"%s></iframe>', $src, $attributes);
   }
 }
