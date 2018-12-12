@@ -84,11 +84,6 @@ class YoukuRenderer implements FileRendererInterface {
     $width  = (int) $width;
     $height = (int) $height;
 
-    if (empty($width) && empty($height)) {
-      $width  = 480;
-      $height = 270;
-    }
-
     // Checks for an autoplay option at the file reference itself, if not overriden yet
     if (!isset($options['autoplay']) && $file instanceof FileReference) {
       $autoplay = $file->getProperty('autoplay');
@@ -110,7 +105,7 @@ class YoukuRenderer implements FileRendererInterface {
 
     // $urlParams = ['autohide=1'];
     //
-    // $options['controls'] = MathUtility::canBeInterpretedAsInteger($options['controls']) ? (int)$options['controls'] : 2;
+    // $options['controls'] = MathUtility::canBeInterpretedAsInteger($options['controls']) ? (int) $options['controls'] : 2;
     // $options['controls'] = MathUtility::forceIntegerInRange($options['controls'], 0, 2);
     // $urlParams[] = 'controls=' . $options['controls'];
     //
@@ -119,47 +114,72 @@ class YoukuRenderer implements FileRendererInterface {
     // }
     //
     // if (!empty($options['loop'])) {
-    //   $urlParams[] = 'loop=1&amp;playlist=' . $mediaId;
+    //   $urlParams[] = 'loop=1&playlist=' . rawurlencode($mediaId);
     // }
-    //
     // if (isset($options['relatedVideos'])) {
     //   $urlParams[] = 'rel=' . (int) (bool) $options['relatedVideos'];
     // }
     //
     // if (!isset($options['enablejsapi']) || !empty($options['enablejsapi'])) {
-    //   $urlParams[] = 'enablejsapi=1&amp;origin=' . rawurlencode(GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST'));
+    //   $urlParams[] = 'enablejsapi=1&origin=' . rawurlencode(GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST'));
     // }
     //
     // $urlParams[] = 'showinfo=' . (int) !empty($options['showinfo']);
 
     if (empty($urlParams)) {
-      $src = sprintf('https://player.youku.com/embed/%s==', $mediaId);
+      $src = sprintf('https://player.youku.com/embed/%s==', rawurlencode($mediaId));
     } else {
-      $src = sprintf('https://player.youku.com/embed/%s==?%s', $mediaId, implode('&amp;', $urlParams));
+      $src = sprintf('https://player.youku.com/embed/%s==?%s', rawurlencode($mediaId), implode('&', $urlParams));
     }
 
-    $attributes = ['allowfullscreen'];
+    $attributes = [];
+    $attributes['allowfullscreen'] = true;
 
     if ($width > 0) {
-      $attributes[] = 'width="' . $width . '"';
+      $attributes['width'] = $width;
     }
 
     if ($height > 0) {
-      $attributes[] = 'height="' . $height . '"';
+      $attributes['height'] = $height;
     }
 
-    if (is_object($GLOBALS['TSFE']) && $GLOBALS['TSFE']->config['config']['doctype'] !== 'html5') {
-      $attributes[] = 'frameborder="0"';
+    if (isset($GLOBALS['TSFE']) && is_object($GLOBALS['TSFE']) && $GLOBALS['TSFE']->config['config']['doctype'] !== 'html5') {
+      $attributes['frameborder'] = 0;
     }
 
     foreach (['accesskey', 'class', 'dir', 'id', 'lang', 'onclick', 'poster', 'preload', 'style', 'tabindex', 'title'] as $key) {
       if (!empty($options[$key])) {
-        $attributes[] = $key . '="' . htmlspecialchars($options[$key]) . '"';
+        $attributes[$key] = $options[$key];
       }
     }
 
-    $attributes = empty($attributes) ? '' : ' ' . implode(' ', $attributes);
+    return sprintf(
+      '<iframe src="%s"%s></iframe>',
+      htmlspecialchars($src, ENT_QUOTES | ENT_HTML5),
+      empty($attributes) ? '' : ' ' . $this->implodeAttributes($attributes)
+    );
+  }
 
-    return sprintf('<iframe src="%s"%s></iframe>', $src, $attributes);
+  /**
+   * Implodes attributes.
+   *
+   * @internal
+   * @param array $attributes The attributes
+   * @return string The implode attributes
+   */
+  protected function implodeAttributes(array $attributes) {
+    $attributeList = [];
+
+    foreach ($attributes as $name => $value) {
+      $name = preg_replace('/[^\p{L}0-9_.-]/u', '', $name);
+
+      if ($value === true) {
+        $attributeList[] = $name;
+      } else {
+        $attributeList[] = $name . '="' . htmlspecialchars($value, ENT_QUOTES | ENT_HTML5) . '"';
+      }
+    }
+
+    return implode(' ', $attributeList);
   }
 }

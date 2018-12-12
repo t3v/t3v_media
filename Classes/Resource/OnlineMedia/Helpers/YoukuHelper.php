@@ -15,7 +15,7 @@ class YoukuHelper extends AbstractOEmbedHelper {
   /**
    * The allowed hosts.
    */
-  const ALLOWED_HOSTS = ['v.youku.com', 'player.youku.com'];
+  const ALLOWED_HOSTS = ['player.youku.com', 'v.youku.com'];
 
   /**
    * Gets public URL.
@@ -27,7 +27,7 @@ class YoukuHelper extends AbstractOEmbedHelper {
   public function getPublicUrl(File $file, $relativeToCurrentScript = false) {
     $mediaId = $this->getOnlineMediaId($file);
 
-    return sprintf('https://v.youku.com/v_show/id_%s', $mediaId);
+    return sprintf('https://v.youku.com/v_show/id_%s', rawurlencode($mediaId));
   }
 
   /**
@@ -119,7 +119,7 @@ class YoukuHelper extends AbstractOEmbedHelper {
    * @return string The oEmbed URL
    */
   protected function getOEmbedUrl($mediaId, $format = 'json') {
-    $url = sprintf('https://v.youku.com/v_show/id_%s==.%s', $mediaId, $format);
+    $url = sprintf('https://v.youku.com/v_show/id_%s==.%s', rawurlencode($mediaId), rawurlencode($format));
 
     return $url;
   }
