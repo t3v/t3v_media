@@ -1,7 +1,15 @@
-Changelog
+CHANGELOG
 =========
 
 Notable changes will be documented in this file. The project adheres to [Semantic Versioning].
+
+Unreleased
+----------
+
+* Improved Youku Helper and Renderer
+* Updated Travis CI and AppVeyor configuration
+* Updated dependencies
+* Cleaned up
 
 2.0.3
 -----
