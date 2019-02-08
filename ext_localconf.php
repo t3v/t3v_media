@@ -24,15 +24,15 @@ $rendererRegistry->registerRendererClass(\T3v\T3vMedia\Resource\Rendering\YoukuR
 // === Backend ===
 
 if (TYPO3_MODE === 'BE') {
+  // --- Icons ---
+
   $iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);
 
-  // Register the icon for the Youku mime type
   $iconRegistry->registerIcon(
     'mimetypes-media-video-youku',
     \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
     ['source' => "{$iconsFolder}/MimeTypes/Youku.svg"]
   );
 
-  // Register the file extension icon
   $iconRegistry->registerFileExtension('youku', 'mimetypes-media-video-youku');
 }
